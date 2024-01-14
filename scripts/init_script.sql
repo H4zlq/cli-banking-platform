@@ -1,14 +1,34 @@
-CREATE DATABASE IF NOT EXISTS bank_system;
+CREATE DATABASE IF NOT EXISTS python_bank;
+
+USE python_bank;
+
+CREATE TABLE IF NOT EXISTS account_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type_name VARCHAR(50) NOT NULL UNIQUE
+);
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    balance DECIMAL(10, 2) NOT NULL DEFAULT 0
+    account_type_id INT NOT NULL,
+    balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    FOREIGN KEY (account_type_id) REFERENCES account_types(id)
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    transaction_type ENUM('DEPOSIT', 'WITHDRAWAL') NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
     action VARCHAR(255) NOT NULL,
-    balance DECIMAL(10, 2) NOT NULL DEFAULT 0
+    log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
