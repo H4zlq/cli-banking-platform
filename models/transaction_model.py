@@ -1,4 +1,4 @@
-class TransactionModel:
+class Transaction:
     def __init__(self, user_id, transaction_type, amount, transaction_date):
         self._user_id = user_id
         self._transaction_type = transaction_type

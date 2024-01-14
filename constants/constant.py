@@ -5,7 +5,7 @@ account_type_table = [
     ["2", "Current"],
 ]
 
-user_menu_table = [
+authentication_table = [
     ["1", "Login"],
     ["2", "Register"],
     ["3", "Forgot password"],

@@ -1,4 +1,4 @@
-class UserModel:
+class User:
     def __init__(self, id, username, password, account_type_id, balance):
         self.id = id
         self.username = username

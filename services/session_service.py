@@ -1,12 +1,12 @@
 from models.session_model import Session
 
 
-class SessionController(Session):
+class SessionService(Session):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(SessionController, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
 
     def __init__(self):

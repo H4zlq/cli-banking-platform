@@ -1,48 +1,50 @@
-import time
-from constants.constant import user_menu_table, bank_table
-from controllers.database_controller import DatabaseController
-from controllers.session_controller import SessionController
+from constants.constant import authentication_table, bank_table
+from services.account_service import AccountService
+from services.bank_service import BankService
+from services.log_service import LogService
+from services.session_service import SessionService
+from services.transaction_service import TransactionService
+from services.user_service import UserService
 from enums.transaction_type_enum import TransactionType
-from models.transaction_model import TransactionModel
-from views.auth_view import AuthView
+from models.transaction_model import Transaction
+from utils.time_util import TimeUtil
+from views.authentication_view import AuthenticationView
 
 
 class ChooserView:
-    database_controller = DatabaseController()
-    session_controller = SessionController()
-    auth_view = AuthView()
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    authentication_view = AuthenticationView()
+    session_service = SessionService()
+    account_service = AccountService()
+    user_service = UserService()
+    bank_service = BankService()
+    log_service = LogService()
+    transaction_service = TransactionService()
+    timestamp = TimeUtil.get_timestamp()
 
     def main_menu(self):
         print("\n--- Welcome to Bank System ---")
 
-        for column in user_menu_table:
+        for column in authentication_table:
             print(f"{column[0]}. {column[1]}")
 
-        # Get user input
         user_input = input("Please choose an option: ")
 
-        # Check if user input is valid
         if user_input not in ["1", "2", "3", "4"]:
             print("Invalid option")
             return
 
-        # Check if user input is 1
         if user_input == "1":
-            self.auth_view.login(self)
+            self.authentication_view.login(self)
             pass
 
-        # Check if user input is 2
         if user_input == "2":
-            self.auth_view.register()
+            self.authentication_view.register()
             pass
 
-        # Check if user input is 3
         if user_input == "3":
-            self.database_controller.forgot_password()
+            self.account_service.forgot_password()
             pass
 
-        # Check if user input is 4
         if user_input == "4":
             print("Thank you for using our system")
             exit()
@@ -52,8 +54,8 @@ class ChooserView:
     def bank_menu(self):
         print("\n--- Bank ---")
 
-        # Get user session
-        session = self.session_controller.get_session()
+        # Get session
+        session = self.session_service.get_session()
 
         # Get session model
         id = session.get_id()
@@ -62,22 +64,18 @@ class ChooserView:
         for column in bank_table:
             print(f"{column[0]}. {column[1]}")
 
-        # Get user input
         user_input = input("Please choose an option: ")
 
-        # Check if user input is valid
         if user_input not in ["1", "2", "3", "4", "5", "6"]:
             print("Invalid option")
             return
 
-        # Check if user input is 1
         if user_input == "1":
-            balance = self.database_controller.get_balance(username)
+            balance = self.bank_service.get_balance(username)
 
-            print(f"Your account balance is {str(balance[0])}")
+            print(f"Your account balance is {str(balance)}")
             pass
 
-        # Check if user input is 2
         if user_input == "2":
             balance = float(input("Please enter the amount you want to deposit: "))
 
@@ -86,10 +84,10 @@ class ChooserView:
                 return
 
             # Update balance
-            deposited_balance = self.database_controller.deposit(username, balance)
+            deposited_balance = self.bank_service.deposit(username, balance)
 
             # Insert logs
-            self.database_controller.insert_logs(
+            self.log_service.insert_logs(
                 id,
                 "deposit",
                 self.timestamp,
@@ -99,18 +97,17 @@ class ChooserView:
             transaction_type = TransactionType.DEPOSIT
 
             # Get transaction model
-            transaction = TransactionModel(
+            transaction = Transaction(
                 id, transaction_type.value, balance, self.timestamp
             )
 
             # Insert transaction history
-            self.database_controller.insert_transaction(transaction)
+            self.transaction_service.insert_transaction(transaction)
 
             print(f"Successfully deposited to your account: {balance}")
             print(f"Your new balance is {str(deposited_balance)}")
             pass
 
-        # Check if user input is 3
         if user_input == "3":
             balance = float(input("Please enter the amount you want to withdraw: "))
 
@@ -119,27 +116,26 @@ class ChooserView:
                 return
 
             # Update balance
-            withdrawed_balance = self.database_controller.withdraw(username, balance)
+            withdrawed_balance = self.bank_service.withdraw(username, balance)
 
             # Insert logs
-            self.database_controller.insert_logs(id, transaction_type.value, balance)
+            self.log_service.insert_logs(id, transaction_type.value, balance)
 
             # Get transaction type
-            transaction_type = TransactionType.WITHDRAW
+            transaction_type = TransactionType.WITHDRAWAL
 
             # Get transaction model
-            transaction = TransactionModel(
+            transaction = Transaction(
                 id, transaction_type.value, balance, self.timestamp
             )
 
             # Insert transaction history
-            self.database_controller.insert_transaction(transaction)
+            self.transaction_service.insert_transaction(transaction)
 
             print(f"Successfully withdrawn from your account: {balance}")
             print(f"Your new balance is {str(withdrawed_balance)}")
             pass
 
-        # Check if user input is 4
         if user_input == "4":
             amount = float(input("Please enter the amount you want to transfer: "))
 
@@ -150,40 +146,39 @@ class ChooserView:
             recipient = input("Please enter the recipient: ")
 
             # Update balance
-            transferred_balance = self.database_controller.transfer(
+            transferred_balance = self.bank_service.transfer(
                 username, amount, recipient
             )
 
             # Insert logs
-            self.database_controller.insert_logs(id, "transfer", amount)
+            self.log_service.insert_logs(id, "transfer", amount)
 
             # Get transaction type
             transaction_type = TransactionType.TRANSFER
 
             # Get transaction model
-            transaction = TransactionModel(
+            transaction = Transaction(
                 id, transaction_type.value, balance, self.timestamp
             )
 
             # Insert transaction history
-            self.database_controller.insert_transaction(transaction)
+            self.transaction_service.insert_transaction(transaction)
 
             print(f"Successfully transferred to {recipient}: {amount}")
             print(f"Your new balance is {str(transferred_balance)}")
             pass
 
-        # Check if user input is 5
         if user_input == "5":
-            transaction_history = self.database_controller.get_transaction(id)
+            transaction_history = self.transaction_service.get_transaction(id)
 
             print("--- Transaction History ---")
             print("Transaction Type | Amount | Timestamp")
             for transaction in transaction_history:
-                print(f"    {transaction[2]}      | {transaction[3]} | {transaction[4]}")
+                print(
+                    f"    {transaction[2]}      | {transaction[3]} | {transaction[4]}"
+                )
 
-        # Check if user input is 6
         if user_input == "6":
             return self.main_menu()
 
-        # Call bank view again
         self.bank_menu()
