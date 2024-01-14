@@ -1,3 +1,10 @@
+init_script = "scripts/init_script.sql"
+
+account_type_table = [
+    ["1", "Savings"],
+    ["2", "Current"],
+]
+
 user_menu_table = [
     ["1", "Login"],
     ["2", "Register"],
