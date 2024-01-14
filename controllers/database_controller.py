@@ -92,6 +92,7 @@ class DatabaseController(Database):
             # Get user model properties
             username = user_model.get_username()
             password = user_model.get_password()
+            account_type_id = user_model.get_account_type_id()
             balance = user_model.get_balance()
 
             # Hash password
@@ -99,8 +100,8 @@ class DatabaseController(Database):
 
             # Insert user
             cursor.execute(
-                "INSERT INTO users (username, password, balance) VALUES (%s, %s, %s)",
-                (username, hashed_password, balance),
+                "INSERT INTO users (username, password, account_type_id, balance) VALUES (%s, %s, %s, %s)",
+                (username, hashed_password, account_type_id, balance),
             )
 
             # Commit changes
@@ -345,8 +346,8 @@ class DatabaseController(Database):
         except Exception as err:
             print(f"Cannot transfer: {err}")
 
-    # Transaction history controller
-    def insert_logs(self, action, balance):
+    # Logs controller
+    def insert_logs(self, user_id, action, date):
         try:
             # Get connection
             connection = self.get_connection()
@@ -356,8 +357,8 @@ class DatabaseController(Database):
 
             # Insert logs
             cursor.execute(
-                "INSERT INTO logs (action, balance) VALUES (%s, %s)",
-                (action, balance),
+                "INSERT INTO logs (user_id, action, log_date) VALUES (%s, %s, %s)",
+                (user_id, action, date),
             )
 
             # Commit changes
@@ -394,3 +395,59 @@ class DatabaseController(Database):
             return logs
         except Exception as err:
             print(f"Cannot get logs: {err}")
+
+    # Transaction controller
+    def insert_transaction(self, transaction):
+        try:
+            # Get connection
+            connection = self.get_connection()
+
+            # Get cursor
+            cursor = self.get_cursor()
+
+            # Get transaction properties
+            user_id = transaction.get_user_id()
+            transaction_type = transaction.get_transaction_type()
+            amount = transaction.get_amount()
+            transaction_date = transaction.get_transaction_date()
+
+            # Insert transaction
+            cursor.execute(
+                "INSERT INTO transactions (user_id, transaction_type, amount, transaction_date) VALUES (%s, %s, %s, %s)",
+                (user_id, transaction_type, amount, transaction_date),
+            )
+
+            # Commit changes
+            connection.commit()
+
+            # Close cursor
+            cursor.close()
+
+            # Close connection
+            connection.close()
+        except Exception as err:
+            print(f"Cannot insert transaction: {err}")
+
+    def get_transaction(self, user_id):
+        try:
+            # Get connection
+            connection = self.get_connection()
+
+            # Get cursor
+            cursor = self.get_cursor()
+
+            # Get transactions
+            cursor.execute("SELECT * FROM transactions WHERE user_id = %s", (user_id,))
+
+            # Fetch transactions
+            transactions = cursor.fetchall()
+
+            # Close cursor
+            cursor.close()
+
+            # Close connection
+            connection.close()
+
+            return transactions
+        except Exception as err:
+            print(f"Cannot get transaction: {err}")
