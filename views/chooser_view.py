@@ -1,11 +1,17 @@
+import time
 from constants.constant import user_menu_table, bank_table
 from controllers.database_controller import DatabaseController
+from controllers.session_controller import SessionController
+from enums.transaction_type_enum import TransactionType
+from models.transaction_model import TransactionModel
 from views.auth_view import AuthView
 
 
 class ChooserView:
     database_controller = DatabaseController()
+    session_controller = SessionController()
     auth_view = AuthView()
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
     def main_menu(self):
         print("\n--- Welcome to Bank System ---")
@@ -43,8 +49,16 @@ class ChooserView:
 
         return user_input
 
-    def bank_menu(self, username):
+    def bank_menu(self):
         print("\n--- Bank ---")
+
+        # Get user session
+        session = self.session_controller.get_session()
+
+        # Get session model
+        id = session.get_id()
+        username = session.get_username()
+
         for column in bank_table:
             print(f"{column[0]}. {column[1]}")
 
@@ -74,8 +88,23 @@ class ChooserView:
             # Update balance
             deposited_balance = self.database_controller.deposit(username, balance)
 
+            # Insert logs
+            self.database_controller.insert_logs(
+                id,
+                "deposit",
+                self.timestamp,
+            )
+
+            # Get transaction type
+            transaction_type = TransactionType.DEPOSIT
+
+            # Get transaction model
+            transaction = TransactionModel(
+                id, transaction_type.value, balance, self.timestamp
+            )
+
             # Insert transaction history
-            self.database_controller.insert_logs("deposit", balance)
+            self.database_controller.insert_transaction(transaction)
 
             print(f"Successfully deposited to your account: {balance}")
             print(f"Your new balance is {str(deposited_balance)}")
@@ -92,10 +121,21 @@ class ChooserView:
             # Update balance
             withdrawed_balance = self.database_controller.withdraw(username, balance)
 
-            # Insert transaction history
-            self.database_controller.insert_logs("withdraw", balance)
+            # Insert logs
+            self.database_controller.insert_logs(id, transaction_type.value, balance)
 
-            print(f"Successfully withdrawn to your account: {balance}")
+            # Get transaction type
+            transaction_type = TransactionType.WITHDRAW
+
+            # Get transaction model
+            transaction = TransactionModel(
+                id, transaction_type.value, balance, self.timestamp
+            )
+
+            # Insert transaction history
+            self.database_controller.insert_transaction(transaction)
+
+            print(f"Successfully withdrawn from your account: {balance}")
             print(f"Your new balance is {str(withdrawed_balance)}")
             pass
 
@@ -114,8 +154,19 @@ class ChooserView:
                 username, amount, recipient
             )
 
+            # Insert logs
+            self.database_controller.insert_logs(id, "transfer", amount)
+
+            # Get transaction type
+            transaction_type = TransactionType.TRANSFER
+
+            # Get transaction model
+            transaction = TransactionModel(
+                id, transaction_type.value, balance, self.timestamp
+            )
+
             # Insert transaction history
-            self.database_controller.insert_logs("transfer", amount)
+            self.database_controller.insert_transaction(transaction)
 
             print(f"Successfully transferred to {recipient}: {amount}")
             print(f"Your new balance is {str(transferred_balance)}")
@@ -123,17 +174,16 @@ class ChooserView:
 
         # Check if user input is 5
         if user_input == "5":
-            transaction_history = self.database_controller.get_logs()
+            transaction_history = self.database_controller.get_transaction(id)
 
             print("--- Transaction History ---")
-            print("Action | Amount")
+            print("Transaction Type | Amount | Timestamp")
             for transaction in transaction_history:
-                print(f"{transaction[1]} | {str(transaction[2])}")
-            pass
+                print(f"    {transaction[2]}      | {transaction[3]} | {transaction[4]}")
 
         # Check if user input is 6
         if user_input == "6":
             return self.main_menu()
 
         # Call bank view again
-        self.bank_menu(username)
+        self.bank_menu()
