@@ -1,6 +1,6 @@
 from controllers.database_controller import DatabaseController
 from models.user_model import UserModel
-from utils.util import Util
+from utils.bcrypt_util import BcryptUtil
 
 
 class AuthView:
@@ -58,7 +58,7 @@ class AuthView:
                     password_from_model = user_model.get_password()
 
                     # Hash password
-                    password_matched = Util.check_password(
+                    password_matched = BcryptUtil.check_password(
                         password, password_from_model.encode("utf-8")
                     )
 

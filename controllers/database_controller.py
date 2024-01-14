@@ -1,5 +1,5 @@
 from databases.database import Database
-from utils.util import Util
+from utils.bcrypt_util import BcryptUtil
 
 
 class DatabaseController(Database):
@@ -20,7 +20,7 @@ class DatabaseController(Database):
                     return
 
                 # Hash password
-                hashed_password = Util.hash_password(password)
+                hashed_password = BcryptUtil.hash_password(password)
 
                 # Update password
                 self.update_password(username, hashed_password)
@@ -95,7 +95,7 @@ class DatabaseController(Database):
             balance = user_model.get_balance()
 
             # Hash password
-            hashed_password = Util.hash_password(password)
+            hashed_password = BcryptUtil.hash_password(password)
 
             # Insert user
             cursor.execute(
