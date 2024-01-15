@@ -27,7 +27,7 @@ class TransactionService(Database):
                 cursor.close()
                 connection.close()
 
-    def get_transaction(self, user_id):
+    def get_transactions(self, user_id):
         try:
             connection = self.get_connection()
 
@@ -38,9 +38,9 @@ class TransactionService(Database):
                 )
 
                 # Fetch transactions
-                transactions = cursor.fetchall()
+                results = cursor.fetchall()
 
-            return transactions
+            return results
         except Exception as err:
             print(f"Cannot get transaction: {err}")
         finally:
