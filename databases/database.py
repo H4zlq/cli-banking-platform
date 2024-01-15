@@ -20,7 +20,7 @@ class Database(metaclass=DatabaseMeta):
         return None
 
     def get_cursor(self):
-        return self._connection.cursor(prepared=True)
+        return self._connection.cursor(prepared=True, dictionary=True)
 
     def commit(self):
         self._connection.commit()
