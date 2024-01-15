@@ -12,13 +12,14 @@ class BankService(Database):
                     "SELECT balance FROM users WHERE username = %s", (username,)
                 )
 
-                # Fetch balance
-                balance = cursor.fetchone()
+                # Fetch balance from database
+                result = cursor.fetchone()
 
-                # Get balance from tuple
-                balance = balance[0]
+                # Get balance from dictionary
+                balance = result["balance"]
 
-            return balance
+            # Return balance as float
+            return float(balance)
         except Exception as err:
             print(f"Cannot get balance: {err}")
         finally:
@@ -57,13 +58,10 @@ class BankService(Database):
                 print("Invalid amount")
                 return
 
-            # Convert to float
-            balance = float(balance)
-
             # Add balance
             balance += amount
 
-            # Update balance
+            # Update balance in database
             self.update_balance(username, balance)
 
             return balance
@@ -82,9 +80,6 @@ class BankService(Database):
                 print("Invalid amount")
                 return
 
-            # Convert to float
-            balance = float(balance)
-
             # Check if balance is enough
             if balance < amount:
                 print("Insufficient balance")
@@ -93,7 +88,7 @@ class BankService(Database):
             # Subtract balance
             balance -= amount
 
-            # Update balance
+            # Update balance in database
             self.update_balance(username, balance)
 
             return balance
@@ -116,16 +111,13 @@ class BankService(Database):
                 print("Insufficient balance")
                 return
 
-            # Convert to float
-            balance = float(balance)
-
             # Subtract balance
             balance -= amount
 
-            # Update balance
+            # Update balance in database
             self.update_balance(username, balance)
 
-            # Get recipient balance
+            # Get recipient balance from database
             recipient_balance = self.get_balance(recipient)
 
             # Check if recipient exists
@@ -133,13 +125,10 @@ class BankService(Database):
                 print("Recipient does not exist")
                 return
 
-            # Convert to float
-            recipient_balance = float(recipient_balance)
-
             # Add balance
             recipient_balance += amount
 
-            # Update balance
+            # Update balance in database
             self.update_balance(recipient, recipient_balance)
 
             return balance

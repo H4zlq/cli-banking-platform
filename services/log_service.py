@@ -30,9 +30,9 @@ class LogService(Database):
                 cursor.execute("SELECT * FROM logs")
 
                 # Fetch logs
-                logs = cursor.fetchall()
+                results = cursor.fetchall()
 
-            return logs
+            return results
         except Exception as err:
             print(f"Cannot get logs: {err}")
         finally:

@@ -12,9 +12,9 @@ class UserService(Database):
                 cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
 
                 # Fetch user
-                user = cursor.fetchone()
+                result = cursor.fetchone()
 
-            return user
+            return result
         except Exception as err:
             print(f"Cannot get user: {err}")
         finally:
