@@ -173,7 +173,13 @@ class ChooserView:
         if user_input == "6":
             return self.main_menu()
 
-        self.bank_menu()
+        # Ask user if they want to continue
+        is_continue = self.is_continue()
+
+        if is_continue:
+            return self.bank_menu()
+
+        return self.main_menu()
 
     def insert_logs_and_transaction(self, id, transaction_type, amount, date):
         # Insert logs
@@ -182,3 +188,15 @@ class ChooserView:
         transaction = Transaction(id, transaction_type.value, amount, date)
 
         self.transaction_controller.insert_transaction(transaction)
+
+    def is_continue(self):
+        user_input = input("Do you want to continue? (y/n): ")
+
+        if user_input == "y":
+            return True
+
+        if user_input != "n":
+            print("Invalid input, Please try again with (y/n)")
+            return self.is_continue()
+
+        return False
