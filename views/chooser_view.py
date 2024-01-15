@@ -101,7 +101,7 @@ class ChooserView:
                 return
 
             # Update balance
-            withdrawed_balance = self.bank_service.withdraw(username, balance)
+            withdrawed_balance = self.bank_controller.withdraw(username, balance)
 
             # Get transaction type
             transaction_type = TransactionType.WITHDRAWAL
@@ -142,26 +142,42 @@ class ChooserView:
             pass
 
         if user_input == "5":
-            transaction_history = self.transaction_service.get_transaction(id)
+            transaction_history = self.transaction_controller.get_transactions(id)
 
-            print("--- Transaction History ---")
-            print("Transaction Type | Amount | Timestamp")
-            for transaction in transaction_history:
-                print(
-                    f"    {transaction[2]}      | {transaction[3]} | {transaction[4]}"
+        print("--- Transaction History ---")
+        print(
+            "{:<20} | {:<10} | {:<20}".format(
+                "Transaction Type", "Amount", "Transaction Date"
+            )
+        )
+        for transaction in transaction_history:
+            transaction = Transaction(
+                transaction["user_id"],
+                transaction["transaction_type"],
+                transaction["amount"],
+                transaction["transaction_date"],
+            )
+
+            transaction_type = transaction.get_transaction_type()
+            amount = transaction.get_amount()
+            transaction_date = transaction.get_transaction_date()
+            print(type(transaction_date))
+
+            print(
+                "{:<20} | {:<10} | {:<20}".format(
+                    transaction_type, str(amount), str(transaction_date)
                 )
+            )
 
         if user_input == "6":
             return self.main_menu()
 
         self.bank_menu()
 
-    def insert_logs_and_transaction(self, id, transaction_type, amount, timestamp):
+    def insert_logs_and_transaction(self, id, transaction_type, amount, date):
         # Insert logs
-        self.log_controller.insert_logs(id, transaction_type.value, timestamp)
+        self.log_controller.insert_logs(id, transaction_type.value, date)
 
-        transaction_type = TransactionType.TRANSFER
-
-        transaction = Transaction(id, transaction_type.value, amount, timestamp)
+        transaction = Transaction(id, transaction_type.value, amount, date)
 
         self.transaction_controller.insert_transaction(transaction)
