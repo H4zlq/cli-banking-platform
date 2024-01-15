@@ -1,5 +1,5 @@
 import mysql.connector
-from databases.database_meta import DatabaseMeta
+from metas.database_meta import DatabaseMeta
 from utils.file_util import FileUtil
 from constants.constant import init_script
 

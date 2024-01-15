@@ -1,10 +1,8 @@
 from constants.constant import authentication_table, bank_table
-from services.account_service import AccountService
-from services.bank_service import BankService
-from services.log_service import LogService
-from services.session_service import SessionService
-from services.transaction_service import TransactionService
-from services.user_service import UserService
+from controllers.bank_controller import BankController
+from controllers.log_controller import LogController
+from controllers.session_controller import SessionController
+from controllers.transaction_controller import TransactionController
 from enums.transaction_type_enum import TransactionType
 from models.transaction_model import Transaction
 from utils.time_util import TimeUtil
@@ -13,12 +11,10 @@ from views.authentication_view import AuthenticationView
 
 class ChooserView:
     authentication_view = AuthenticationView()
-    session_service = SessionService()
-    account_service = AccountService()
-    user_service = UserService()
-    bank_service = BankService()
-    log_service = LogService()
-    transaction_service = TransactionService()
+    session_controller = SessionController()
+    bank_controller = BankController()
+    log_controller = LogController()
+    transaction_controller = TransactionController()
     timestamp = TimeUtil.get_timestamp()
 
     def main_menu(self):
@@ -42,7 +38,7 @@ class ChooserView:
             pass
 
         if user_input == "3":
-            self.account_service.forgot_password()
+            self.authentication_view.forgot_password()
             pass
 
         if user_input == "4":
@@ -55,7 +51,7 @@ class ChooserView:
         print("\n--- Bank ---")
 
         # Get session
-        session = self.session_service.get_session()
+        session = self.session_controller.get_session()
 
         # Get session model
         id = session.get_id()
@@ -71,9 +67,8 @@ class ChooserView:
             return
 
         if user_input == "1":
-            balance = self.bank_service.get_balance(username)
-
-            print(f"Your account balance is {str(balance)}")
+            balance = self.bank_controller.get_balance(username)
+            print(f"Your current balance is {str(balance)}")
             pass
 
         if user_input == "2":
@@ -84,25 +79,15 @@ class ChooserView:
                 return
 
             # Update balance
-            deposited_balance = self.bank_service.deposit(username, balance)
-
-            # Insert logs
-            self.log_service.insert_logs(
-                id,
-                "deposit",
-                self.timestamp,
-            )
+            deposited_balance = self.bank_controller.deposit(username, balance)
 
             # Get transaction type
             transaction_type = TransactionType.DEPOSIT
 
-            # Get transaction model
-            transaction = Transaction(
-                id, transaction_type.value, balance, self.timestamp
+            # Insert logs and transaction
+            self.insert_logs_and_transaction(
+                id, transaction_type, balance, self.timestamp
             )
-
-            # Insert transaction history
-            self.transaction_service.insert_transaction(transaction)
 
             print(f"Successfully deposited to your account: {balance}")
             print(f"Your new balance is {str(deposited_balance)}")
@@ -118,19 +103,13 @@ class ChooserView:
             # Update balance
             withdrawed_balance = self.bank_service.withdraw(username, balance)
 
-            # Insert logs
-            self.log_service.insert_logs(id, transaction_type.value, balance)
-
             # Get transaction type
             transaction_type = TransactionType.WITHDRAWAL
 
-            # Get transaction model
-            transaction = Transaction(
-                id, transaction_type.value, balance, self.timestamp
+            # Insert logs and transaction
+            self.insert_logs_and_transaction(
+                id, transaction_type, balance, self.timestamp
             )
-
-            # Insert transaction history
-            self.transaction_service.insert_transaction(transaction)
 
             print(f"Successfully withdrawn from your account: {balance}")
             print(f"Your new balance is {str(withdrawed_balance)}")
@@ -146,23 +125,17 @@ class ChooserView:
             recipient = input("Please enter the recipient: ")
 
             # Update balance
-            transferred_balance = self.bank_service.transfer(
+            transferred_balance = self.bank_controller.transfer(
                 username, amount, recipient
             )
-
-            # Insert logs
-            self.log_service.insert_logs(id, "transfer", amount)
 
             # Get transaction type
             transaction_type = TransactionType.TRANSFER
 
-            # Get transaction model
-            transaction = Transaction(
-                id, transaction_type.value, balance, self.timestamp
+            # Insert logs and transaction
+            self.insert_logs_and_transaction(
+                id, transaction_type, amount, self.timestamp
             )
-
-            # Insert transaction history
-            self.transaction_service.insert_transaction(transaction)
 
             print(f"Successfully transferred to {recipient}: {amount}")
             print(f"Your new balance is {str(transferred_balance)}")
@@ -182,3 +155,13 @@ class ChooserView:
             return self.main_menu()
 
         self.bank_menu()
+
+    def insert_logs_and_transaction(self, id, transaction_type, amount, timestamp):
+        # Insert logs
+        self.log_controller.insert_logs(id, transaction_type.value, timestamp)
+
+        transaction_type = TransactionType.TRANSFER
+
+        transaction = Transaction(id, transaction_type.value, amount, timestamp)
+
+        self.transaction_controller.insert_transaction(transaction)

@@ -22,15 +22,15 @@ class UserService(Database):
                 cursor.close()
                 connection.close()
 
-    def insert_user(self, user_model):
+    def insert_user(self, user):
         try:
             connection = self.get_connection()
 
             # Get user model properties
-            username = user_model.get_username()
-            password = user_model.get_password()
-            account_type_id = user_model.get_account_type_id()
-            balance = user_model.get_balance()
+            username = user.get_username()
+            password = user.get_password()
+            account_type_id = user.get_account_type_id()
+            balance = user.get_balance()
 
             # Hash password
             hashed_password = BcryptUtil.hash_password(password)

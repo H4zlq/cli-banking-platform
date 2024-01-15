@@ -1,19 +1,23 @@
-from models.session_model import Session
+from metas.session_meta import SessionMeta
 
 
-class SessionService(Session):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
-
-    def __init__(self):
-        self.user = None
+class SessionService(metaclass=SessionMeta):
+    def __init__(self, session_duration):
+        self.data = None
+        self.session_duration = session_duration
+        self.timer = None
 
     def get_session(self):
-        return self.user
+        return self.data
 
-    def set_session(self, user):
-        self.user = user
+    def set_session(self, data):
+        self.data = data
+
+    def end_session(self):
+        self.data = None
+        self.timer = None
+
+    def cancel_timer(self):
+        if self.timer:
+            self.timer.cancel()
+            self.timer = None

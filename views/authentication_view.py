@@ -1,5 +1,6 @@
-from services.session_service import SessionService
-from services.user_service import UserService
+from controllers.account_controller import AccountController
+from controllers.session_controller import SessionController
+from controllers.user_controller import UserController
 from enums.account_type_enum import AccountType
 from models.user_model import User
 from utils.bcrypt_util import BcryptUtil
@@ -7,8 +8,8 @@ from constants.constant import account_type_table
 
 
 class AuthenticationView:
-    session_service = SessionService()
-    user_service = UserService()
+    account_controller = AccountController()
+    user_controller = UserController()
     max_attempts = 3
     attempts = 0
 
@@ -17,7 +18,7 @@ class AuthenticationView:
         username = input("Please enter a username: ")
 
         try:
-            user = self.user_service.get_user(username)
+            user = self.user_controller.get_user(username)
 
             if user:
                 print(
@@ -55,44 +56,52 @@ class AuthenticationView:
                     initial_balance = 0
 
                 # Get user model
-                user_model = User(
-                    -1, username, password, account_type.value, initial_balance
-                )
+                user = User(-1, username, password, account_type.value, initial_balance)
 
                 # Insert user
-                self.user_service.insert_user(user_model)
+                self.user_controller.insert_user(user)
 
                 print(f"Successfully registered as {username}")
         except Exception as err:
             print(f"Cannot register user: {err}")
 
     def login(self, chooser_view):
+        session_controller = SessionController(self)
+
+        # Check if session exists
+        session = session_controller.get_session()
+
+        if session:
+            print("You are already logged in")
+            chooser_view.bank_menu()
+            return
+
         print("\n--- Login ---")
         while self.attempts < self.max_attempts:
             username = input("Please enter your username: ")
 
             try:
-                user = self.user_service.get_user(username)
+                user = self.user_controller.get_user(username)
 
                 if user:
                     password = input("Please enter your password: ")
 
                     # Get user model
-                    user_model = User(user[0], user[1], user[2], user[3], user[4])
+                    user = User(user[0], user[1], user[2], user[3], user[4])
 
-                    # Get user model properties
-                    password_from_model = user_model.get_password()
+                    # Get hashed password from user model and database
+                    hashed_password = user.get_password()
 
                     # Hash password
                     password_matched = BcryptUtil.check_password(
-                        password, password_from_model.encode("utf-8")
+                        password, hashed_password.encode("utf-8")
                     )
 
                     if password_matched:
                         print(f"Welcome back {username}")
 
                         # Create user session
-                        self.session_service.set_session(user_model)
+                        session_controller.start_session(user)
 
                         chooser_view.bank_menu()
                     else:
@@ -108,3 +117,34 @@ class AuthenticationView:
                     self.attempts += 1
             except Exception as err:
                 print(f"Cannot login user: {err}")
+
+    def forgot_password(self):
+        print("\n--- Forgot Password ---")
+        username = input("Please enter your username: ")
+
+        try:
+            user = self.user_controller.get_user(username)
+
+            if user:
+                current_password = input("Please enter your current password: ")
+                password = input("Please enter your new password: ")
+                confirm_password = input("Please confirm your new password: ")
+
+                if current_password != user[2]:
+                    print("Current password does not match")
+                    return
+
+                if password != confirm_password:
+                    print("Password does not match")
+                    return
+
+                # Hash password
+                hashed_password = BcryptUtil.hash_password(password)
+
+                self.account_controller.update_password(username, hashed_password)
+
+                print("Successfully updated password")
+            else:
+                print("Account does not exist")
+        except Exception as err:
+            print(f"Cannot update password: {err}")
