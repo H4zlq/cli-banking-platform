@@ -21,11 +21,8 @@ class User:
     def get_balance(self):
         return self.balance
 
-    def set_balance(self, balance):
-        self.balance = balance
-
     def __str__(self):
-        return f"UserModel(username={self.username}, password={self.password}, balance={self.balance})"
+        return f"UserModel(id={self.id}, username={self.username}, password={self.password}, balance={self.balance})"
 
-    def __repr__(self):
-        return f"UserModel(username={self.username}, password={self.password}, balance={self.balance})"
+    def __repr__(self) -> str:
+        return self.__str__()
