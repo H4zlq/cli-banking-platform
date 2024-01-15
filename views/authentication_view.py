@@ -18,9 +18,9 @@ class AuthenticationView:
         username = input("Please enter a username: ")
 
         try:
-            user = self.user_controller.get_user(username)
+            user_from_database = self.user_controller.get_user(username)
 
-            if user:
+            if user_from_database:
                 print(
                     "Account already exists, Please login instead of register new account."
                 )
@@ -81,13 +81,19 @@ class AuthenticationView:
             username = input("Please enter your username: ")
 
             try:
-                user = self.user_controller.get_user(username)
+                user_from_database = self.user_controller.get_user(username)
 
-                if user:
+                if user_from_database:
                     password = input("Please enter your password: ")
 
                     # Get user model
-                    user = User(user[0], user[1], user[2], user[3], user[4])
+                    user = User(
+                        user_from_database["id"],
+                        user_from_database["username"],
+                        user_from_database["password"],
+                        user_from_database["account_type_id"],
+                        user_from_database["balance"],
+                    )
 
                     # Get hashed password from user model and database
                     hashed_password = user.get_password()
@@ -123,14 +129,14 @@ class AuthenticationView:
         username = input("Please enter your username: ")
 
         try:
-            user = self.user_controller.get_user(username)
+            user_from_database = self.user_controller.get_user(username)
 
-            if user:
+            if user_from_database:
                 current_password = input("Please enter your current password: ")
                 password = input("Please enter your new password: ")
                 confirm_password = input("Please confirm your new password: ")
 
-                if current_password != user[2]:
+                if current_password != user_from_database["password"]:
                     print("Current password does not match")
                     return
 
