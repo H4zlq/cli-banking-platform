@@ -1,4 +1,4 @@
-from meta.session_meta import SingletonMeta
+from meta.singleton_meta import SingletonMeta
 
 
 class SessionService(metaclass=SingletonMeta):
