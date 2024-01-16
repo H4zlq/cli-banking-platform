@@ -143,7 +143,6 @@ class ChooserView:
 
         if user_input == "5":
             transaction_history = self.transaction_controller.get_transactions(id)
-            pass
 
             print("--- Transaction History ---")
             print(
@@ -162,7 +161,6 @@ class ChooserView:
             transaction_type = transaction.get_transaction_type()
             amount = transaction.get_amount()
             transaction_date = transaction.get_transaction_date()
-            print(type(transaction_date))
 
             print(
                 "{:<20} | {:<10} | {:<20}".format(
