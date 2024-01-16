@@ -1,7 +1,7 @@
-from metas.session_meta import SessionMeta
+from meta.session_meta import SingletonMeta
 
 
-class SessionService(metaclass=SessionMeta):
+class SessionService(metaclass=SingletonMeta):
     def __init__(self, session_duration):
         self.data = None
         self.session_duration = session_duration
