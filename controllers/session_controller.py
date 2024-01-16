@@ -1,9 +1,9 @@
 import threading
-from metas.session_meta import SessionMeta
+from meta.singleton_meta import SingletonMeta
 from services.session_service import SessionService
 
 
-class SessionController(metaclass=SessionMeta):
+class SessionController(metaclass=SingletonMeta):
     session_service = SessionService(60)
 
     def __init__(self, authentication_view=None):

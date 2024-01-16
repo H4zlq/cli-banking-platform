@@ -1,10 +1,10 @@
 import mysql.connector
-from metas.database_meta import DatabaseMeta
+from meta.singleton_meta import SingletonMeta
 from utils.file_util import FileUtil
 from constants.constant import init_script
 
 
-class Database(metaclass=DatabaseMeta):
+class Database(metaclass=SingletonMeta):
     _connection = None
 
     def get_connection(self):
