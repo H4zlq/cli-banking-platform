@@ -3,9 +3,6 @@ from views.chooser_view import ChooserView
 
 
 class Main:
-    def __init__(self):
-        pass
-
     def run(self):
         # Create database and chooser view instances
         database = Database()
